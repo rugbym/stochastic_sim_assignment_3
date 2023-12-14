@@ -10,29 +10,47 @@ data = pd.read_csv(file)
 
 
 def lv_system(state,t, a, b, d, g):
+    """Lotka-Volterra predator-prey model."""
     x, y = state
     dx = a * x- b * x* y
     dy = d * x *y - g * y
     return [dx, dy]
 
 def sim_lv(params, time):
+    """Simulate the Lotka-Volterra model."""
     a,b,d,g  = params
     start =[data['x'][0],data['y'][0] ]
     simulated = odeint(lv_system, start, time, args=(a,b ,d, g))
     return simulated
 
 def sse(params, time, data):
+    """Calculate the sum of squared errors."""
     simulated = sim_lv(params, time)
     sse = np.sum((data['x'] - simulated[:, 0])** 2 + (data['y']- simulated[:,1]) **2)
     return sse
 
 def mae(params, time, data):
+    """Calculate the mean absolute error."""
     simulated =sim_lv(params,time)
     mae = np.mean(np.abs(data['x']-simulated[:, 0]) +np.abs(data['y'] -simulated[:, 1]))
     return mae
 
 
 def hill_climbing(obj,params, time, data,i, step):
+    """Hill climbing algorithm.
+    
+    Args:
+        obj (function): Objective function to minimize.
+        params (array): Initial parameters.
+        time (array): Time points.
+        data (DataFrame): Original data.
+        i (int): Number of iterations.
+        step (float): Step size.
+        
+    Returns:
+        array: Optimized parameters.
+            
+    """
     best_params = params
     optimal = obj(best_params, time, data)
 
@@ -45,6 +63,21 @@ def hill_climbing(obj,params, time, data,i, step):
     return best_params
 
 def simulated_annealing(obj,params, time, data,i, temp):
+    """Simulated annealing algorithm.
+
+    Args:
+
+        obj (function): Objective function to minimize.
+        params (array): Initial parameters.
+        time (array): Time points.
+        data (DataFrame): Original data.
+        i (int): Number of iterations.
+        temp (float): Temperature.
+
+    Returns:
+        array: Optimized parameters.
+
+    """
     best_params = params
     current= params
     current_score = obj(current, time, data)
@@ -67,6 +100,20 @@ def simulated_annealing(obj,params, time, data,i, temp):
 
 
 def optimize_parameters(data, method, func, i,  temp, array):
+    """Optimize parameters of the Lotka-Volterra model.
+
+    Args:
+        data (DataFrame): Original data.
+        method (str): Optimization method.
+        func (str): Objective function.
+        i (int): Number of iterations.
+        temp (float): Temperature.
+        array (array): Initial parameters.
+
+    Returns:
+        array: Optimized parameters.
+
+    """
     step = 0.202
     initial_params = array
     time_series = data['t'].values
@@ -83,6 +130,16 @@ def optimize_parameters(data, method, func, i,  temp, array):
 
 
 def calculate_errors(params, original_data):
+    """Calculate errors between simulated and original data.
+
+    Args:
+        params (array): Optimized parameters.
+        original_data (DataFrame): Original data.
+
+    Returns:
+        tuple: SSE and MAE errors.
+
+    """
     time_series = original_data['t'].values
 
     # Calculate SSE and MAE
@@ -92,6 +149,12 @@ def calculate_errors(params, original_data):
     return sse_error, mae_error
 
 def plot_sim(params,data):
+    """Plot simulated and original data.
+
+    Args:
+        params (array): Optimized parameters.
+        data (DataFrame): Original data.
+    """
     time_series = data['t'].values
     simulated = sim_lv(params, time_series)
 
@@ -106,15 +169,16 @@ def plot_sim(params,data):
     plt.legend()
     plt.show()
 
-i=0
-starting = np.array([-2, -1.15, -0.4, -0.85]) # based on numerous runs
-while i < 10:
-    ## choose hill_climbing or simulated_annealing and mae or sse
-    optimized_params =optimize_parameters(data,'hill_climbing', 'mae', 10000, 1, starting)
-    print("Optimized Parameters:", optimized_params)
-    sse_error, mae_error = calculate_errors(optimized_params, data)
-    print("Error (SSE) between simulated and original data:", sse_error)
-    print("Error (MAE) between simulated and original data:", mae_error)
-    starting = optimized_params
-    i +=1
-    plot_sim(optimized_params, data)
+if __name__ == '__main__':
+    i=0
+    starting = np.array([-2, -1.15, -0.4, -0.85]) # based on numerous runs
+    while i < 10:
+        ## choose hill_climbing or simulated_annealing and mae or sse
+        optimized_params =optimize_parameters(data,'simulated_annealing', 'sse', 10000, 1, starting)
+        print("Optimized Parameters:", optimized_params)
+        sse_error, mae_error = calculate_errors(optimized_params, data)
+        print("Error (SSE) between simulated and original data:", sse_error)
+        print("Error (MAE) between simulated and original data:", mae_error)
+        starting = optimized_params
+        i +=1
+        plot_sim(optimized_params, data)
