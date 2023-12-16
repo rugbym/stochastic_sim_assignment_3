@@ -1,12 +1,13 @@
 import pandas as pd
 import matplotlib
 import numpy as np
-matplotlib.use('TkAgg')
+if __name__ == '__main__':
+    matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 from scipy.integrate import odeint
 
 file = 'predator-prey-data.csv'
-data = pd.read_csv(file)
+data = pd.read_csv(file,index_col=0)
 
 
 def lv_system(state,t, a, b, d, g):
@@ -72,7 +73,7 @@ def simulated_annealing(obj,params, time, data,i, temp):
         time (array): Time points.
         data (DataFrame): Original data.
         i (int): Number of iterations.
-        temp (float): Temperature.
+        temp (float): Temperature of simulated annealing algorithm.
 
     Returns:
         array: Optimized parameters.
@@ -104,10 +105,10 @@ def optimize_parameters(data, method, func, i,  temp, array):
 
     Args:
         data (DataFrame): Original data.
-        method (str): Optimization method.
-        func (str): Objective function.
+        method (str): Optimization method. Either 'hill_climbing' or 'simulated_annealing'.
+        func (str): Objective function. Either 'sse' or 'mae'.
         i (int): Number of iterations.
-        temp (float): Temperature.
+        temp (float): Temperature of simulated annealing algorithm.
         array (array): Initial parameters.
 
     Returns:
