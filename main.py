@@ -154,7 +154,7 @@ def calculate_errors(params, original_data):
     return sse_error, mae_error
 
 
-def plot_sim(params, data):
+def plot_sim(params, data,residuals = False):
     """Plot simulated and original data.
 
     Args:
@@ -163,19 +163,43 @@ def plot_sim(params, data):
     """
     time_series = data['t'].values
     simulated = sim_lv(params, time_series)
-
-    plt.figure(figsize=(10, 6))
-    plt.plot(data['t'], data['x'], 'b-', label='Actual Prey Population')
-    plt.plot(data['t'], data['y'], 'r-', label='Actual Predator Population')
-    plt.plot(data['t'], simulated[:, 0], 'b--',
-             label='Simulated Prey Population')
-    plt.plot(data['t'], simulated[:, 1], 'r--',
-             label='Simulated Predator Population')
-    plt.xlabel('Time')
-    plt.ylabel('Population')
-    plt.title('Comparison of Predator-Prey Population Dynamics')
-    plt.legend()
-    plt.show()
+    if residuals:
+        fig = plt.figure(figsize=(8, 8),dpi=300)
+        ax2 = fig.add_subplot(211)
+        ax2.plot(data['t'], data['x'], 'b-', label='Actual Prey Population')
+        ax2.plot(data['t'], data['y'], 'r-', label='Actual Predator Population')
+        ax2.plot(data['t'], simulated[:, 0], 'b--',
+                label='Simulated Prey Population')
+        ax2.plot(data['t'], simulated[:, 1], 'r--',
+                label='Simulated Predator Population')
+        ax2.set_xlabel('Time')
+        ax2.set_ylabel('Population')
+        ax2.set_title('Comparison of Predator-Prey Population Dynamics')
+        ax1 = fig.add_subplot(212)
+        ax1.plot(data['t'], data['x']-simulated[:, 0], 'bo',
+                label='Residuals Prey Population')
+        ax1.plot(data['t'], data['y']-simulated[:, 1], 'ro',
+                    label='Residuals Predator Population')
+        ax1.set_xlabel('Time')
+        ax1.set_ylabel('Population')
+        ax2.set_title('residuals of Predator-Prey Population Dynamics')
+        ax1.legend(fontsize=10)
+        plt.tight_layout()
+        plt.show()
+  
+    else:
+        plt.figure(figsize=(10, 6))
+        plt.plot(data['t'], data['x'], 'b-', label='Actual Prey Population')
+        plt.plot(data['t'], data['y'], 'r-', label='Actual Predator Population')
+        plt.plot(data['t'], simulated[:, 0], 'b--',
+                label='Simulated Prey Population')
+        plt.plot(data['t'], simulated[:, 1], 'r--',
+                label='Simulated Predator Population')
+        plt.xlabel('Time')
+        plt.ylabel('Population')
+        plt.title('Comparison of Predator-Prey Population Dynamics')
+        plt.legend()
+        plt.show()
 
 
 if __name__ == '__main__':
